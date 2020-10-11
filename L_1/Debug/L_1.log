@@ -1,0 +1,4 @@
+﻿  Source.cpp
+D:\C2_S1_Labs\OOP\L_1\Source.cpp(4,8): warning C4101: pointMass: неиспользованная локальная переменная
+D:\C2_S1_Labs\OOP\L_1\Source.cpp(5,8): warning C4101: pointMass2: неиспользованная локальная переменная
+  L_1.vcxproj -> D:\C2_S1_Labs\OOP\Debug\L_1.exe
