@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning (disable : 4996)
 
 #include <windows.h>
 #include <windowsx.h>
@@ -9,8 +10,6 @@
 #include <iostream>
 
 using namespace std;
-
-#pragma warning (disable : 4996)
 
 class GDInterface {
 
@@ -99,11 +98,9 @@ public:
 		} while (getch() != 27);
 
 		SelectPen(hdc, holdPen);
-
 		DeletePen(holdPen);
 
 		ReleaseDC(GetConsoleWindow(), hdc);
-
 	}
 
 	static void DrawPaintedRectangle(GDIRect* MainStruct)
@@ -128,11 +125,9 @@ public:
 		} while (getch() != 27);
 
 		SelectPen(hdc, holdPen);
-
-		SelectBrush(hdc, holdBrush);
-
 		DeletePen(CreatedPen);
 
+		SelectBrush(hdc, holdBrush);
 		DeleteBrush(CreatedBrush);
 
 		ReleaseDC(GetConsoleWindow(), hdc);
@@ -161,11 +156,8 @@ public:
 		} while (getch() != 27);
 
 		SelectPen(hdc, hOldPen);
-
 		DeletePen(hRedPen);
 
 		ReleaseDC(GetConsoleWindow(), hdc);
-
 	}
-
 };
