@@ -11,10 +11,6 @@
 
 using namespace std;
 
-class GDInterface {
-
-public:
-
 	struct GDIRect {
 		POINT coords[4];
 		COLORREF color;
@@ -23,61 +19,55 @@ public:
 	};
 
 	static GDIRect* getCoordsFromFile(string filename, int startLine) {
-		try {
+
 			GDIRect* mass = new GDIRect;
 			string s;
-			int n = 0;
-			int counter = 0;
+			int R; int G; int B;
+
 			HWND hWnd = GetConsoleWindow();
 			RECT rc;
+
 			GetClientRect(hWnd, &rc);
 			ifstream file(filename);
-
-			if (!file.is_open())
-				throw "Missing Input.txt";
 
 			for (int i = 0; i < startLine; i++)
 				getline(file, s); //пропуск лайнов
 
 			file >> mass->BrushMode; //Запись в структуру мода кисти
 
-			int R; int G; int B;
 			file >> R; file >> G; file >> B;
 			mass->color = RGB(R, G, B); //запись цвета ручки
+
 			file >> R; file >> G; file >> B;
 			mass->BrushColor = RGB(R, G, B);
 
 			for (int i = 0; i < 4; i++) {
+
 				file >> mass->coords[i].x;
-
-				if (mass->coords[i].x < 0 || mass->coords[i].x > rc.right)
-					throw "Incorrect dot input";
-
 				file >> mass->coords[i].y;
 
-				if (mass->coords[i].y < 0 || mass->coords[i].y > rc.bottom)
-					throw "Incorrect dot input";
-			}
-
-			if (mass->coords[0].y != mass->coords[1].y || mass->coords[2].y != mass->coords[3].y) {
-				throw "Incorrect dots";
-			}
-
-			if (mass->coords[0].x + mass->coords[1].x != mass->coords[2].x + mass->coords[3].x) {
-				throw "Incorrect dots";
-			}
-
-			if (mass->coords[0].x > mass->coords[1].x || mass->coords[3].x > mass->coords[2].x) {
-				throw "Incorrect dots";
 			}
 
 			file.close();
 			return mass;
+	}
+
+	static GDIRect* StructureCheck(GDIRect* MainStruct) {
+		try {
+			if ((MainStruct->coords[1].y) - (MainStruct->coords[0].y) != (MainStruct->coords[3].y) - (MainStruct->coords[2].y)) {
+				throw "not parallelogram. dot 'y' error";
+			}
+
+			if (MainStruct->coords[1].x - MainStruct->coords[0].x != MainStruct->coords[2].x - MainStruct->coords[3].x) {
+				throw "not parallelogram. dot 'x' error";
+			}
 		}
 		catch (const char* exeption) {
-			cout << exeption;
+			cout << "Error: " << exeption;
 			exit(0);
 		};
+
+		return MainStruct;
 	}
 
 	static void DrawSimpleRectangle(GDIRect* MainStruct) {
@@ -145,11 +135,17 @@ public:
 
 		HBRUSH hGreenBrush = CreateSolidBrush(MainStruct->BrushColor);
 
+		HBRUSH CreatedBrush = CreateSolidBrush(RGB(0,0,0));
+
+		HBRUSH holdBrush_1;
+		HBRUSH holdBrush_2;
+
 		do {
+			holdBrush_1 = SelectBrush(hdc, hGreenBrush);
 
 			Polygon(hdc, MainStruct->coords, 4);
 
-			HBRUSH hOldBrush = SelectBrush(hdc, hGreenBrush);
+			holdBrush_2 = SelectBrush(hdc, CreatedBrush);
 
 			Polygon(hdc, ExtraStruct->coords, 4);
 
@@ -160,4 +156,3 @@ public:
 
 		ReleaseDC(GetConsoleWindow(), hdc);
 	}
-};
