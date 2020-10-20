@@ -1,9 +1,15 @@
 #include "GDI.h"
+#include <iostream>
+
+using namespace std;
 
 int main() {
-	POINT pointMass[4];
-	POINT pointMass2[4];
-	GDInterface::DrawSimpleRectangle(GDInterface::getCoordsFromFile("input.txt", 0));
-	GDInterface::DrawPaintedRectangle(GDInterface::getCoordsFromFile("input.txt", 0));
-	GDInterface::DrawRegInReg(GDInterface::getCoordsFromFile("input.txt", 0), GDInterface::getCoordsFromFile("input.txt", 7));
+	GDInterface paral1;
+	GDInterface paral2;
+
+	paral1 = getCoordsFromFile("input.txt", 0);
+	paral2 = getCoordsFromFile("input.txt", 8);
+
+	for(int i = 0; i<3; i++)
+		drawParal(paral1, paral2,i);
 }

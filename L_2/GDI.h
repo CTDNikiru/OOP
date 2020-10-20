@@ -12,152 +12,173 @@
 using namespace std;
 
 class GDInterface {
-
 public:
 
-	struct GDIRect {
-		POINT coords[4];
-		COLORREF color;
-		COLORREF BrushColor;
-		int BrushMode;
-	};
-
-	static GDIRect* getCoordsFromFile(string filename, int startLine) {
-		try {
-			GDIRect* mass = new GDIRect;
-			string s;
-			int n = 0;
-			int counter = 0;
-			HWND hWnd = GetConsoleWindow();
-			RECT rc;
-			GetClientRect(hWnd, &rc);
-			ifstream file(filename);
-
-			if (!file.is_open())
-				throw "Missing Input.txt";
-
-			for (int i = 0; i < startLine; i++)
-				getline(file, s); //пропуск лайнов
-
-			file >> mass->BrushMode; //Запись в структуру мода кисти
-
-			int R; int G; int B;
-			file >> R; file >> G; file >> B;
-			mass->color = RGB(R, G, B); //запись цвета ручки
-			file >> R; file >> G; file >> B;
-			mass->BrushColor = RGB(R, G, B);
-
-			for (int i = 0; i < 4; i++) {
-				file >> mass->coords[i].x;
-
-				if (mass->coords[i].x < 0 || mass->coords[i].x > rc.right)
-					throw "Incorrect dot input";
-
-				file >> mass->coords[i].y;
-
-				if (mass->coords[i].y < 0 || mass->coords[i].y > rc.bottom)
-					throw "Incorrect dot input";
-			}
-
-			if (mass->coords[0].y != mass->coords[1].y || mass->coords[2].y != mass->coords[3].y) {
-				throw "Incorrect dots";
-			}
-
-			if (mass->coords[0].x + mass->coords[1].x != mass->coords[2].x + mass->coords[3].x) {
-				throw "Incorrect dots";
-			}
-
-			if (mass->coords[0].x > mass->coords[1].x || mass->coords[3].x > mass->coords[2].x) {
-				throw "Incorrect dots";
-			}
-
-			file.close();
-			return mass;
-		}
-		catch (const char* exeption) {
-			cout << exeption;
-			exit(0);
-		};
+#pragma region set_Methods
+	void setCoords(POINT coords[4]) {
+		coords_ = coords;
 	}
 
-	static void DrawSimpleRectangle(GDIRect* MainStruct) {
-
-		HDC hdc = GetDC(GetConsoleWindow());
-		SetBkColor(hdc, RGB(0, 0, 0));
-
-		HPEN CreatedPen = CreatePen(MainStruct->BrushMode, 5, MainStruct->color);
-		HPEN holdPen = SelectPen(hdc, CreatedPen);
-
-		HBRUSH CreatedBrush = CreateSolidBrush(GetBkColor(hdc));
-		HBRUSH holdBrish = SelectBrush(hdc, CreatedBrush);
-
-		do {
-
-			Polygon(hdc, MainStruct->coords, 4);
-
-		} while (getch() != 27);
-
-		SelectPen(hdc, holdPen);
-		DeletePen(holdPen);
-
-		ReleaseDC(GetConsoleWindow(), hdc);
+	void setPenColor(COLORREF penColor) {
+		penColor_ = penColor;
 	}
 
-	static void DrawPaintedRectangle(GDIRect* MainStruct)
-
-	{
-		HDC hdc = GetDC(GetConsoleWindow());
-
-		SetBkColor(hdc, RGB(0, 0, 0));
-
-		HPEN CreatedPen = CreatePen(MainStruct->BrushMode, 5, MainStruct->color);
-
-		HPEN holdPen = SelectPen(hdc, CreatedPen);
-
-		HBRUSH CreatedBrush = CreateSolidBrush(MainStruct->BrushColor);
-
-		HBRUSH holdBrush = SelectBrush(hdc, CreatedBrush);
-
-		do {
-
-			Polygon(hdc, MainStruct->coords, 4);
-
-		} while (getch() != 27);
-
-		SelectPen(hdc, holdPen);
-		DeletePen(CreatedPen);
-
-		SelectBrush(hdc, holdBrush);
-		DeleteBrush(CreatedBrush);
-
-		ReleaseDC(GetConsoleWindow(), hdc);
+	void setBrushColor(COLORREF brushColor) {
+		brushColor_ = brushColor;
 	}
 
-	static void DrawRegInReg(GDIRect* MainStruct, GDIRect* ExtraStruct) {
-
-		HDC hdc = GetDC(GetConsoleWindow());
-
-		//SetBkColor(hdc, MainStruct->BrushColor);
-
-		HPEN hRedPen = CreatePen(MainStruct->BrushMode, 5, MainStruct->color);
-
-		HPEN hOldPen = SelectPen(hdc, hRedPen);
-
-		HBRUSH hGreenBrush = CreateSolidBrush(MainStruct->BrushColor);
-
-		do {
-
-			Polygon(hdc, MainStruct->coords, 4);
-
-			HBRUSH hOldBrush = SelectBrush(hdc, hGreenBrush);
-
-			Polygon(hdc, ExtraStruct->coords, 4);
-
-		} while (getch() != 27);
-
-		SelectPen(hdc, hOldPen);
-		DeletePen(hRedPen);
-
-		ReleaseDC(GetConsoleWindow(), hdc);
+	void setPenStyle(int penStyle) {
+		penStyle_ = penStyle;
 	}
+
+	void setPenWidht(int penWidht) {
+		penWidht_ = penWidht;
+	}
+#pragma endregion
+
+#pragma region get_Methods
+	POINT* getCoords() {
+		return coords_;
+	}
+
+	COLORREF getPenColor() {
+		return penColor_;
+	}
+
+	COLORREF getBrushColor() {
+		return brushColor_;
+	}
+
+
+	int getPenStyle() {
+		return penStyle_;
+	}
+
+	int getPenWidht() {
+		return penWidht_;
+	}
+#pragma endregion
+
+private:
+	POINT* coords_;
+	COLORREF penColor_;
+	COLORREF brushColor_;
+
+	int penStyle_;
+	int penWidht_;
 };
+
+
+GDInterface getCoordsFromFile(string filename, int startLine) {
+
+	GDInterface mass;
+	string s;
+	int R; int G; int B;
+	int bufer;
+	POINT* pointMass = new POINT[4];
+
+	ifstream file(filename);
+
+	for (int i = 0; i < startLine; i++)
+		getline(file, s); //пропуск лайнов
+
+	file >> bufer; //Запись в структуру мода кисти
+
+	mass.setPenStyle(bufer);
+
+	file >> bufer;
+
+	mass.setPenWidht(bufer);
+
+	file >> R; file >> G; file >> B;
+
+	mass.setPenColor(RGB(R, G, B)); //запись цвета ручки
+
+	file >> R; file >> G; file >> B;
+
+	mass.setBrushColor(RGB(R, G, B));
+
+	for (int i = 0; i < 4; i++) {
+		file >> pointMass[i].x;
+		file >> pointMass[i].y;
+	}
+
+	mass.setCoords(pointMass);
+
+	file.close();
+	return mass;
+}
+
+
+void StructureCheck(GDInterface paral) {
+	try {
+		if ((paral.getCoords()[1].y) - (paral.getCoords()[0].y) != (paral.getCoords()[3].y) - (paral.getCoords()[2].y)) {
+			throw "not parallelogram. dot 'y' error";
+		}
+
+		if (paral.getCoords()[1].x - paral.getCoords()[0].x != paral.getCoords()[2].x - paral.getCoords()[3].x) {
+			throw "not parallelogram. dot 'x' error";
+		}
+	}
+	catch (const char* exeption) {
+		cout << "Error: " << exeption;
+		exit(0);
+	};
+}
+
+//mode: 0 - simple, 1 - painted, 2 - Paral in Paral
+void drawParal(GDInterface paral, GDInterface paral2, int mode) {
+	HDC hdc = GetDC(GetConsoleWindow());
+
+	HPEN myPen = CreatePen(paral.getPenStyle(), paral.getPenWidht(), paral.getPenColor());
+	HPEN myPen2 = CreatePen(paral2.getPenStyle(), paral2.getPenWidht(), paral2.getPenColor());
+
+	HBRUSH myBrush = CreateSolidBrush(paral.getBrushColor());
+	HBRUSH myBrush2 = CreateSolidBrush(RGB(0,0,0));
+
+	HPEN holdPen;
+	HBRUSH holdBrush;
+
+	switch (mode) {
+	case 0:
+		StructureCheck(paral);
+		holdPen = SelectPen(hdc, myPen);
+		do {
+			Polygon(hdc, paral.getCoords(), 4);
+		} while (getch() != 27);
+
+		ReleaseDC(GetConsoleWindow(), hdc);
+		break;
+
+	case 1:
+		StructureCheck(paral);
+		holdPen = SelectPen(hdc, myPen);
+		holdBrush = SelectBrush(hdc, myBrush);
+		do {
+			Polygon(hdc, paral.getCoords(), 4);
+		} while (getch() != 27);
+
+		ReleaseDC(GetConsoleWindow(), hdc);
+		break;
+
+	case 2:
+		StructureCheck(paral2);
+		do {
+			holdPen = SelectPen(hdc, myPen);
+			holdBrush = SelectBrush(hdc, myBrush);
+			Polygon(hdc, paral.getCoords(), 4);
+			holdPen = SelectPen(hdc, myPen2);
+			holdBrush = SelectBrush(hdc, myBrush2);
+			Polygon(hdc, paral2.getCoords(), 4);
+		} while (getch() != 27);
+
+		ReleaseDC(GetConsoleWindow(), hdc);
+		break;
+	}
+
+	DeletePen(SelectPen(hdc, myPen));
+	DeletePen(SelectPen(hdc, myPen2));
+	DeleteBrush(SelectBrush(hdc, myBrush));
+	DeleteBrush(SelectBrush(hdc, myBrush2));
+}
+
